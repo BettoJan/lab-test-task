@@ -1,0 +1,16 @@
+version: "3"
+services:
+  pgdb:
+    image: postgres:latest
+    env_file:
+      - .env
+    container_name: postgres_container
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data/pgdata
