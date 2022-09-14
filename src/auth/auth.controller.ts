@@ -8,10 +8,10 @@ import {
   Delete,
   UsePipes,
   ValidationPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { AuthDto } from './dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -19,27 +19,36 @@ export class AuthController {
 
   @UsePipes(new ValidationPipe())
   @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
+  create(@Body() createAuthDto: AuthDto) {
     return this.authService.create(createAuthDto);
   }
 
-  @Get()
-  findAll() {
-    return this.authService.findAll();
+  @UsePipes(new ValidationPipe())
+  @HttpCode(200)
+  @Post('login')
+  async login(@Body() { username, password }: AuthDto) {
+    const { login } = await this.authService.validateUser(username, password);
+    return this.authService.login(login);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
-  }
+  // @Get()
+  // findAll() {
+  //   return this.authService.findAll();
+  // }
+  //
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.authService.findOne(+id);
+  // }
+  //
+  // @UsePipes(new ValidationPipe())
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateAuthDto: AuthDto) {
+  //   return this.authService.update(+id, updateAuthDto);
+  // }
+  //
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.authService.remove(+id);
+  // }
 }
