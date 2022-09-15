@@ -8,6 +8,8 @@ import {
   USER_NOT_FOUND_ERROR,
 } from './common/constants/auth.constants';
 import { JwtService } from '@nestjs/jwt';
+import { JwtPayload, Token } from './common/types';
+import { IUser } from 'src/user/user.interface';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +18,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async create(dto: AuthDto) {
+  async create(dto: AuthDto): Promise<Token> {
     const oldUser = await this.databaseService.executeQuery(
       `
       SELECT * FROM users WHERE username = $1`,
@@ -24,6 +26,7 @@ export class AuthService {
     );
 
     if (oldUser[0]) throw new UnauthorizedException(ALREADY_REGISTERED_ERROR);
+
     const salt = await genSalt(10);
     const passwordHash = await hash(dto.password, salt);
 
@@ -31,16 +34,12 @@ export class AuthService {
       `INSERT INTO users (username, passwordHash) VALUES ($1, $2) RETURNING *`,
       [dto.username, passwordHash],
     );
-    return {
-      id: newUser[0].id,
-      username: newUser[0].username,
-      email: newUser[0].email,
-      created_at: newUser[0].created_at,
-      updated_at: newUser[0].updated_at,
-    };
+    const token = await this.generationToken(newUser[0].username);
+
+    return token;
   }
 
-  async validateUser(login: string, password: string) {
+  async validateUser(login: string, password: string): Promise<IUser> {
     const user = await this.databaseService.executeQuery(
       `SELECT * FROM users WHERE username = $1`,
       [login],
@@ -55,19 +54,19 @@ export class AuthService {
     return user[0];
   }
 
-  async issueToken(username: string) {
-    const data = { username };
-    const accessToken = await this.jwtService.signAsync(data, {
+  async generationToken(username: string): Promise<Token> {
+    const jwtPayload: JwtPayload = { username };
+    const accessToken = await this.jwtService.signAsync(jwtPayload, {
       expiresIn: '15d',
     });
     return { accessToken };
   }
 
-  async login(dto: AuthDto) {
+  async login(dto: AuthDto): Promise<Token> {
     const user = await this.validateUser(dto.username, dto.password);
 
-    const token = await this.issueToken(user.login);
+    const token = await this.generationToken(user.username);
 
-    return { user, token };
+    return token;
   }
 }
