@@ -7,14 +7,14 @@ export class DatabaseService {
 
   constructor(@Inject('DATABASE_POOL') private readonly pool: Pool) {}
 
-  executeQuery(queryText: string, values: any[] = []): Promise<any[]> {
+  async executeQuery(queryText: string, values: any[] = []): Promise<any[]> {
     this.logger.debug(`Executing query: ${queryText} (${values})`);
     return this.pool.query(queryText, values).then((result: QueryResult) => {
       this.logger.debug(`Executed query, result size ${result.rows.length}`);
       return result.rows;
     });
   }
-  cleanDatabase() {
+  async cleanDatabase() {
     return this.executeQuery(`DELETE FROM users`);
   }
 }

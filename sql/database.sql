@@ -17,7 +17,7 @@ $$ LANGUAGE 'plpgsql'
 ;
 CREATE TRIGGER set_updated_at
     BEFORE UPDATE
-    ON testt.public.users
+    ON {POSTGRES_DB}.public.users
     FOR EACH ROW
     EXECUTE PROCEDURE set_updated_at()
 ;
