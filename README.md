@@ -9,7 +9,7 @@ docker-compose -f docker-compose.yml up --no-start
 docker-compose -f docker-compose.yml start
 ```
 После этого у нас поднимаются 2 контейнера:
-mail:   nestjs приложение
+mail:   nestjs приложение;
 postgres: бд
 
 
