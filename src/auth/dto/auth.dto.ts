@@ -6,8 +6,4 @@ export class AuthDto {
 
   @IsString()
   password: string;
-
-  @IsOptional()
-  @IsEmail()
-  email: string;
 }

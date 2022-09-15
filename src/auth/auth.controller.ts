@@ -1,11 +1,7 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
   UsePipes,
   ValidationPipe,
   HttpCode,
@@ -26,29 +22,7 @@ export class AuthController {
   @UsePipes(new ValidationPipe())
   @HttpCode(200)
   @Post('login')
-  async login(@Body() { username, password }: AuthDto) {
-    const { login } = await this.authService.validateUser(username, password);
-    return this.authService.login(login);
+  async login(@Body() dto: AuthDto) {
+    return this.authService.login(dto);
   }
-
-  // @Get()
-  // findAll() {
-  //   return this.authService.findAll();
-  // }
-  //
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.authService.findOne(+id);
-  // }
-  //
-  // @UsePipes(new ValidationPipe())
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateAuthDto: AuthDto) {
-  //   return this.authService.update(+id, updateAuthDto);
-  // }
-  //
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.authService.remove(+id);
-  // }
 }
