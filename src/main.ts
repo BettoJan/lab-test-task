@@ -19,6 +19,6 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   app.enableShutdownHooks();
-  await app.listen(process.env.API_PORT || 7777);
+  await app.listen(process.env.API_PORT || 5000);
 }
 bootstrap();
