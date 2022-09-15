@@ -17,7 +17,7 @@ services:
       - postgres
     restart: always
   postgres:
-    image: postgresdb
+    image: postgres:latest
     env_file:
       - .env
     container_name: postgres

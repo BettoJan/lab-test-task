@@ -5,6 +5,3 @@ RUN npm install
 ADD . .
 COPY ./dist ./dist
 CMD ["npm", "run", "dev"]
-
-FROM postgres
-COPY sql/db.sql /docker-entrypoint-initdb.d/
