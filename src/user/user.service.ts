@@ -1,25 +1,64 @@
 import { Injectable } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
-
+import { DatabaseService } from '../core/database/database.service';
+import { genSalt, hash } from 'bcryptjs';
+import {
+  EMAIL_OR_USERNAME_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from './common/constants/auth.constants';
 @Injectable()
 export class UserService {
-  create(createUserDto: UpdateUserDto) {
-    return 'This action adds a new user';
+  constructor(private databaseService: DatabaseService) {}
+  async findAll() {
+    return this.databaseService.executeQuery(`SELECT * FROM users`, []);
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findOne(id: number) {
+    return this.databaseService.executeQuery(
+      `SELECT * FROM users WHERE id = $1`,
+      [id],
+    );
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async update(id: number, dto: UpdateUserDto) {
+    const user = await this.databaseService.executeQuery(
+      `SELECT * FROM users WHERE id = $1`,
+      [id],
+    );
+
+    const isSomeUser = await this.databaseService.executeQuery(
+      `
+      SELECT * FROM users WHERE username = $1 or email = $2`,
+      [dto.username, dto.email],
+    );
+
+    if (isSomeUser[0] && isSomeUser[0].id !== id)
+      return { message: EMAIL_OR_USERNAME_ERROR };
+
+    if (dto.password) {
+      const salt = await genSalt(10);
+      user[0].password = await hash(dto.password, salt);
+    }
+
+    const updatedUser = await this.databaseService.executeQuery(
+      `
+    UPDATE users SET username = $1, email = $2, passwordHash = $3 WHERE id = $4 RETURNING *`,
+      [dto.username, dto.email, user[0].password, id],
+    );
+
+    return updatedUser[0];
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+  async remove(id: number) {
+    const user = await this.databaseService.executeQuery(
+      `SELECT * FROM users WHERE id = $1`,
+      [id],
+    );
+    if (!user[0]) return { message: USER_NOT_FOUND_ERROR };
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+    return this.databaseService.executeQuery(
+      `DELETE FROM users WHERE id = $1`,
+      [id],
+    );
   }
 }

@@ -9,7 +9,7 @@ import {
 } from './common/constants/auth.constants';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload, Token } from './common/types';
-import { IUser } from 'src/user/user.interface';
+import { IUser } from 'src/user/types/user.interface';
 
 @Injectable()
 export class AuthService {
