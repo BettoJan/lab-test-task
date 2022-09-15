@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DatabaseService } from '../core/database/database.service';
 import { genSalt, hash } from 'bcryptjs';
@@ -6,6 +6,7 @@ import {
   EMAIL_OR_USERNAME_ERROR,
   USER_NOT_FOUND_ERROR,
 } from './common/constants/auth.constants';
+import { IUser } from './types/user.interface';
 @Injectable()
 export class UserService {
   constructor(private databaseService: DatabaseService) {}
@@ -13,14 +14,14 @@ export class UserService {
     return this.databaseService.executeQuery(`SELECT * FROM users`, []);
   }
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<IUser[]> {
     return this.databaseService.executeQuery(
       `SELECT * FROM users WHERE id = $1`,
       [id],
     );
   }
 
-  async update(id: number, dto: UpdateUserDto) {
+  async update(id: number, dto: UpdateUserDto): Promise<IUser> {
     const user = await this.databaseService.executeQuery(
       `SELECT * FROM users WHERE id = $1`,
       [id],
@@ -33,7 +34,7 @@ export class UserService {
     );
 
     if (isSomeUser[0] && isSomeUser[0].id !== id)
-      return { message: EMAIL_OR_USERNAME_ERROR };
+      throw new UnauthorizedException(EMAIL_OR_USERNAME_ERROR);
 
     if (dto.password) {
       const salt = await genSalt(10);
@@ -49,12 +50,12 @@ export class UserService {
     return updatedUser[0];
   }
 
-  async remove(id: number) {
+  async remove(id: number): Promise<IUser[]> {
     const user = await this.databaseService.executeQuery(
       `SELECT * FROM users WHERE id = $1`,
       [id],
     );
-    if (!user[0]) return { message: USER_NOT_FOUND_ERROR };
+    if (!user[0]) throw new UnauthorizedException(USER_NOT_FOUND_ERROR);
 
     return this.databaseService.executeQuery(
       `DELETE FROM users WHERE id = $1`,

@@ -14,4 +14,7 @@ export class DatabaseService {
       return result.rows;
     });
   }
+  cleanDatabase() {
+    return this.executeQuery(`DELETE FROM users`);
+  }
 }

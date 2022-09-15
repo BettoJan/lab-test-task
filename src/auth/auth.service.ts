@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { DatabaseService } from 'src/core/database/database.service';
+import { DatabaseService } from '../core/database/database.service';
 import { AuthDto } from './dto/auth.dto';
 import { genSalt, hash, compare } from 'bcryptjs';
 import {
