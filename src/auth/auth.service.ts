@@ -24,15 +24,20 @@ export class AuthService {
     );
 
     if (oldUser[0]) throw new UnauthorizedException(ALREADY_REGISTERED_ERROR);
-
     const salt = await genSalt(10);
     const passwordHash = await hash(dto.password, salt);
 
     const newUser = await this.databaseService.executeQuery(
-      `INSERT INTO users (username, passwordHash) VALUES ($1, $2, $3) RETURNING *`,
+      `INSERT INTO users (username, passwordHash) VALUES ($1, $2) RETURNING *`,
       [dto.username, passwordHash],
     );
-    return newUser;
+    return {
+      id: newUser[0].id,
+      username: newUser[0].username,
+      email: newUser[0].email,
+      created_at: newUser[0].created_at,
+      updated_at: newUser[0].updated_at,
+    };
   }
 
   async validateUser(login: string, password: string) {
@@ -41,7 +46,7 @@ export class AuthService {
       [login],
     );
 
-    if (!user) throw new UnauthorizedException(USER_NOT_FOUND_ERROR);
+    if (!user[0]) throw new UnauthorizedException(USER_NOT_FOUND_ERROR);
     const isPasswordMatching = await compare(password, user[0].passwordhash);
 
     if (!isPasswordMatching)
@@ -55,7 +60,7 @@ export class AuthService {
     const accessToken = await this.jwtService.signAsync(data, {
       expiresIn: '15d',
     });
-    return accessToken;
+    return { accessToken };
   }
 
   async login(dto: AuthDto) {
