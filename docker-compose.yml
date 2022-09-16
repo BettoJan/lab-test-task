@@ -12,11 +12,13 @@ services:
       - /app/node_modules
     ports:
       - 5000:5000
+      - 9229:9229
     restart: always
     command: npm run dev
     depends_on:
       - postgres
   postgres:
+    container_name: postgres
     build:
         context: ./Docker
         dockerfile: db.Dockerfile
@@ -29,8 +31,7 @@ services:
       timeout: 10s
       retries: 7
       start_period: 12s
-    container_name: postgres
-    restart: unless-stopped
+    restart: always
     ports:
       - 5432:5432
     environment:
@@ -38,4 +39,4 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ./pgdata:/var/lib/postgresql/test
+      - ./pgdata:/var/lib/postgresql/data
